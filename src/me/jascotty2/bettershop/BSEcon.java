@@ -37,9 +37,6 @@ public class BSEcon implements Listener {
 
 	protected static String methodName = null;
 	protected static Economy econ = null;
-	// iconomy seems to throw alot of errors...
-	// this is to only display one
-	static boolean _pastBalanceErr = false;
 	static BetterShop plugin;
 	final PluginManager pm;
 
@@ -125,11 +122,7 @@ public class BSEcon implements Listener {
 				return econ.getBalance(playerName);
 			}
 		} catch (Exception e) {
-			if (!_pastBalanceErr) {
-				BetterShopLogger.Severe("Error looking up player balance \n"
-						+ "(this error will only show once)", e, false);
-				_pastBalanceErr = true;
-			}
+				BetterShopLogger.Severe("Error looking up player balance.", e, false);
 		}
 		return 0;
 	}
@@ -247,17 +240,6 @@ public class BSEcon implements Listener {
 				return true;
 			}
 			BetterShopLogger.Severe("Failed to credit player", false);
-			// something seems to be wrong with iConomy: reload it
-//			BetterShopLogger.Log(Level.SEVERE, "Failed to credit player: attempting iConomy reload", false);
-//			if (reloadIConomy(player.getServer())) {
-//				try {
-//					if (bankTransaction(player.getName(), amount)) {
-//						return true;
-//					}
-//				} catch (Exception ex) {
-//				}
-//			}
-//			BetterShopLogger.Log(Level.SEVERE, "iConomy reload failed to resolve issue.", false);
 		} else {
 			BetterShopLogger.Severe("Failed to credit player: no economy plugin", false);
 			return false;
@@ -281,18 +263,6 @@ public class BSEcon implements Listener {
 				return true;
 			}
 			BetterShopLogger.Severe("Failed to debit player", false);
-
-			// something seems to be wrong with iConomy: reload it
-//			BetterShopLogger.Log(Level.SEVERE, "Failed to debit player: attempting iConomy reload", false);
-//			if (reloadIConomy(player.getServer())) {
-//				try {
-//					if (bankTransaction(player.getName(), -amount)) {
-//						return true;
-//					}
-//				} catch (Exception ex) {
-//				}
-//			}
-//			BetterShopLogger.Log(Level.SEVERE, "iConomy reload failed to resolve issue.", false);
 		} else {
 			BetterShopLogger.Severe("Failed to debit player: no economy plugin", false);
 			return false;
@@ -337,30 +307,9 @@ public class BSEcon implements Listener {
 	}
 
 	public static boolean hasBank(String bank) {
-//		return economyMethod != null 
-//				? economyMethod.hasBanks() && economyMethod.hasBank(bank)
-//				: econ != null ? econ.hasBankSupport() && econ.getBanks().contains(bank) : false;
-
 		if (econ != null && econ.hasBankSupport()) {
 			return econ.bankBalance(bank).transactionSuccess();
 		}
 		return false;
 	}
-//
-//	static boolean reloadIConomy(Server serv) {
-//		try {
-//			PluginManager m = serv.getPluginManager();
-//			Plugin icon = m.getPlugin("iConomy");
-//			if (icon != null) {
-//				m.disablePlugin(icon);
-//				m.enablePlugin(icon);
-//
-//				return true;
-//			}
-//		} catch (Exception ex) {
-//			BetterShopLogger.Log(Level.SEVERE, "Error reloading iConomy", ex);
-//		}
-//		return false;
-//	}
-} // end class BSEcon
-
+}
