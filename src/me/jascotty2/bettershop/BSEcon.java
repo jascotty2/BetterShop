@@ -17,8 +17,6 @@
  */
 package me.jascotty2.bettershop;
 
-import com.nijikokun.register_1_5.payment.Method;
-import com.nijikokun.register_1_5.payment.Methods;
 import java.util.Map.Entry;
 import me.jascotty2.bettershop.enums.EconMethod;
 import me.jascotty2.bettershop.utils.BSPermissions;
@@ -37,8 +35,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class BSEcon implements Listener {
 
-	protected static Method economyMethod = null;
-	protected static Methods _econMethods = new Methods();
 	protected static String methodName = null;
 	protected static Economy econ = null;
 	// iconomy seems to throw alot of errors...
@@ -54,7 +50,10 @@ public class BSEcon implements Listener {
 			methodName = econ.getName();
 			BetterShopLogger.Log("Using " + methodName + " (via Vault) for economy");
 		}
-		Methods.setMethod(pm);
+		else {
+			BetterShopLogger.Severe("[BetterShop] Error: Vault not found or Vault failed to register economy. Disabling plugin.");
+			pm.disablePlugin(plugin);
+		}
 	}
 
 	private boolean setupEconomy() {
@@ -70,34 +69,8 @@ public class BSEcon implements Listener {
 		return econ != null;
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginEnable(PluginEnableEvent event) {
-		if (econ != null) {
-			return;
-		}
-		if (!Methods.hasMethod() && Methods.setMethod(plugin.getServer().getPluginManager())) {
-			economyMethod = Methods.getMethod();
-			methodName = economyMethod.getName() + " v" + economyMethod.getVersion();
-			BetterShopLogger.Log("Using " + methodName + " for economy");
-		}
-	}
-
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginDisable(PluginDisableEvent event) {
-		if (econ != null) {
-			return;
-		}
-		// Check to see if the plugin thats being disabled is the one we are using
-		if (_econMethods != null && Methods.hasMethod() && Methods.checkDisabled(event.getPlugin())) {
-			economyMethod = null;
-			methodName = null;
-			Methods.reset();
-			BetterShopLogger.Log(" Economy Plugin was disabled.");
-		}
-	}
-
 	public static boolean active() {
-		return BetterShop.config.econ != EconMethod.AUTO || econ != null || economyMethod != null;
+		return BetterShop.config.econ != EconMethod.AUTO || econ != null;
 	}
 
 	public static String getMethodName() {
@@ -112,8 +85,7 @@ public class BSEcon implements Listener {
 
 	public static boolean hasAccount(Player pl) {
 		return pl != null && (BetterShop.config.econ != EconMethod.AUTO
-				|| (econ != null && econ.hasAccount(pl.getName()))
-				|| (economyMethod != null && economyMethod.hasAccount(pl.getName())));
+				|| (econ != null && econ.hasAccount(pl.getName())));
 	}
 
 	public static boolean canAfford(Player pl, double amt) {
@@ -151,8 +123,6 @@ public class BSEcon implements Listener {
 		try {
 			if (econ != null && econ.hasAccount(playerName)) {
 				return econ.getBalance(playerName);
-			} else if (economyMethod != null && economyMethod.hasAccount(playerName)) {
-				return economyMethod.getAccount(playerName).balance();
 			}
 		} catch (Exception e) {
 			if (!_pastBalanceErr) {
@@ -195,12 +165,6 @@ public class BSEcon implements Listener {
 				return;
 			}
 			econ.depositPlayer(playerName, amt);
-		} else if (economyMethod != null) {
-			if (!economyMethod.hasAccount(playerName)) {
-				// TODO? add methods for creating an account
-				return;
-			}
-			economyMethod.getAccount(playerName).add(amt);
 		}
 	}
 
@@ -253,12 +217,6 @@ public class BSEcon implements Listener {
 				return;
 			}
 			econ.withdrawPlayer(playerName, amt);
-		} else if (economyMethod != null) {
-			if (!economyMethod.hasAccount(playerName)) {
-				// TODO? add methods for creating an account
-				return;
-			}
-			economyMethod.getAccount(playerName).subtract(amt);
 		}
 	}
 
@@ -351,9 +309,7 @@ public class BSEcon implements Listener {
 					&& BetterShop.getSettings().BOSBank != null
 					&& !BetterShop.getSettings().BOSBank.trim().isEmpty()
 					&& hasBank(BetterShop.getSettings().BOSBank)) {
-				if (economyMethod != null) {
-					BSEcon.addMoney(BetterShop.getSettings().BOSBank, -amount);
-				} else if (econ != null) {
+				if (econ != null) {
 					if (amount < 0) {
 						econ.bankWithdraw(BetterShop.getSettings().BOSBank, -amount);
 					} else {
@@ -370,8 +326,6 @@ public class BSEcon implements Listener {
 		try {
 			if (econ != null) {
 				return econ.format(amt);
-			} else if (economyMethod != null) {
-				return economyMethod.format(amt);
 			}
 			return String.format("%.2f", amt) + " "
 					+ (amt > 1 || amt < 1 ? BetterShop.getSettings().pluralCurrency
@@ -387,9 +341,7 @@ public class BSEcon implements Listener {
 //				? economyMethod.hasBanks() && economyMethod.hasBank(bank)
 //				: econ != null ? econ.hasBankSupport() && econ.getBanks().contains(bank) : false;
 
-		if (economyMethod != null) {
-			return economyMethod.hasBanks() && economyMethod.hasBank(bank);
-		} else if (econ != null && econ.hasBankSupport()) {
+		if (econ != null && econ.hasBankSupport()) {
 			return econ.bankBalance(bank).transactionSuccess();
 		}
 		return false;

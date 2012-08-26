@@ -25,8 +25,6 @@ import me.jascotty2.bettershop.enums.BetterShopPermission;
 import me.jascotty2.bettershop.utils.BSPermissions;
 import me.jascotty2.lib.bukkit.commands.Command;
 import me.jascotty2.lib.util.Str;
-//import me.taylorkelly.help.Help;
-import me.taylorkelly.help.Help;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -188,7 +186,7 @@ public class HelpCommands {
 		return true;
 	}
 
-	public static void registerHelp(Plugin p) {
+	/*public static void registerHelp(Plugin p) {
 		if (!helpPluginEnabled && p != null && p instanceof Help) {
 			Help helpPlugin = (Help)p;
 			Plugin plugin = BetterShop.getPlugin();
@@ -259,7 +257,7 @@ public class HelpCommands {
 					"OP");
 		} // else Log("HelpCommands not yet found.");
 		helpPluginEnabled = p != null;
-	}
+	}*/
 	
 } // end class HelpCommands
 

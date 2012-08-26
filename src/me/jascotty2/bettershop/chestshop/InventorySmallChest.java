@@ -133,5 +133,11 @@ public class InventorySmallChest implements IInventory {
 	public void setMaxStackSize(int i) {
 	}
 
+	@Override
+	public void startOpen() {
+		// TODO Auto-generated method stub
+		
+	}
+
 } // end class InventorySmallChest
 
