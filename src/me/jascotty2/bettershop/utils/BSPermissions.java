@@ -17,7 +17,6 @@
  */
 package me.jascotty2.bettershop.utils;
 
-import com.nijikokun.bukkit.Permissions.Permissions;
 import me.jascotty2.bettershop.BSutils;
 import me.jascotty2.bettershop.BetterShop;
 import me.jascotty2.bettershop.enums.BetterShopPermission;
@@ -31,7 +30,6 @@ import org.bukkit.entity.Player;
  */
 public class BSPermissions {
 
-	public static Permissions permissionsPlugin = null;
 	public static Permission vaultPerms = null;
 
 	public static boolean hasPermission(CommandSender player, BetterShopPermission node) {
@@ -65,8 +63,6 @@ public class BSPermissions {
 		try {
 			if (vaultPerms != null) {
 				return vaultPerms.has(player, node);
-			} else if (permissionsPlugin != null) {
-				return permissionsPlugin.getHandler().has(player, node);
 			}
 //			System.out.println("no perm: checking superperm for " + player.getName() + ": " + node);
 //			System.out.println(player.hasPermission(node));

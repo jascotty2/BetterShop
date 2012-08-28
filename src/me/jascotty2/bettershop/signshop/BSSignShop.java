@@ -75,6 +75,7 @@ public class BSSignShop implements Listener {
 		pm.registerEvents(checkSigns, bs);
 	}
 
+	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if (event.isCancelled() || !BetterShop.getSettings().signShopEnabled) {

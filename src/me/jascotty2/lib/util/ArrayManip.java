@@ -150,7 +150,6 @@ public class ArrayManip {
 		return ret;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public synchronized static <T> int indexOf(T array[], T search) {
 		if (array == null || array.length == 0) {
 			return -1;

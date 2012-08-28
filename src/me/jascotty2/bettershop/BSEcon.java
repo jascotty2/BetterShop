@@ -17,8 +17,6 @@
  */
 package me.jascotty2.bettershop;
 
-import com.nijikokun.register_1_5.payment.Method;
-import com.nijikokun.register_1_5.payment.Methods;
 import java.util.Map.Entry;
 import me.jascotty2.bettershop.enums.EconMethod;
 import me.jascotty2.bettershop.utils.BSPermissions;
@@ -26,24 +24,15 @@ import me.jascotty2.bettershop.utils.BetterShopLogger;
 import net.milkbowl.vault.Vault;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class BSEcon implements Listener {
 
-	protected static Method economyMethod = null;
-	protected static Methods _econMethods = new Methods();
 	protected static String methodName = null;
 	protected static Economy econ = null;
-	// iconomy seems to throw alot of errors...
-	// this is to only display one
-	static boolean _pastBalanceErr = false;
 	static BetterShop plugin;
 	final PluginManager pm;
 
@@ -54,7 +43,10 @@ public class BSEcon implements Listener {
 			methodName = econ.getName();
 			BetterShopLogger.Log("Using " + methodName + " (via Vault) for economy");
 		}
-		Methods.setMethod(pm);
+		else {
+			BetterShopLogger.Severe("[BetterShop] Error: Vault not found or Vault failed to register economy. Disabling plugin.");
+			pm.disablePlugin(plugin);
+		}
 	}
 
 	private boolean setupEconomy() {
@@ -70,34 +62,8 @@ public class BSEcon implements Listener {
 		return econ != null;
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginEnable(PluginEnableEvent event) {
-		if (econ != null) {
-			return;
-		}
-		if (!Methods.hasMethod() && Methods.setMethod(plugin.getServer().getPluginManager())) {
-			economyMethod = Methods.getMethod();
-			methodName = economyMethod.getName() + " v" + economyMethod.getVersion();
-			BetterShopLogger.Log("Using " + methodName + " for economy");
-		}
-	}
-
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginDisable(PluginDisableEvent event) {
-		if (econ != null) {
-			return;
-		}
-		// Check to see if the plugin thats being disabled is the one we are using
-		if (_econMethods != null && Methods.hasMethod() && Methods.checkDisabled(event.getPlugin())) {
-			economyMethod = null;
-			methodName = null;
-			Methods.reset();
-			BetterShopLogger.Log(" Economy Plugin was disabled.");
-		}
-	}
-
 	public static boolean active() {
-		return BetterShop.config.econ != EconMethod.AUTO || econ != null || economyMethod != null;
+		return BetterShop.config.econ != EconMethod.AUTO || econ != null;
 	}
 
 	public static String getMethodName() {
@@ -112,8 +78,7 @@ public class BSEcon implements Listener {
 
 	public static boolean hasAccount(Player pl) {
 		return pl != null && (BetterShop.config.econ != EconMethod.AUTO
-				|| (econ != null && econ.hasAccount(pl.getName()))
-				|| (economyMethod != null && economyMethod.hasAccount(pl.getName())));
+				|| (econ != null && econ.hasAccount(pl.getName())));
 	}
 
 	public static boolean canAfford(Player pl, double amt) {
@@ -151,15 +116,9 @@ public class BSEcon implements Listener {
 		try {
 			if (econ != null && econ.hasAccount(playerName)) {
 				return econ.getBalance(playerName);
-			} else if (economyMethod != null && economyMethod.hasAccount(playerName)) {
-				return economyMethod.getAccount(playerName).balance();
 			}
 		} catch (Exception e) {
-			if (!_pastBalanceErr) {
-				BetterShopLogger.Severe("Error looking up player balance \n"
-						+ "(this error will only show once)", e, false);
-				_pastBalanceErr = true;
-			}
+				BetterShopLogger.Severe("Error looking up player balance.", e, false);
 		}
 		return 0;
 	}
@@ -195,12 +154,6 @@ public class BSEcon implements Listener {
 				return;
 			}
 			econ.depositPlayer(playerName, amt);
-		} else if (economyMethod != null) {
-			if (!economyMethod.hasAccount(playerName)) {
-				// TODO? add methods for creating an account
-				return;
-			}
-			economyMethod.getAccount(playerName).add(amt);
 		}
 	}
 
@@ -253,12 +206,6 @@ public class BSEcon implements Listener {
 				return;
 			}
 			econ.withdrawPlayer(playerName, amt);
-		} else if (economyMethod != null) {
-			if (!economyMethod.hasAccount(playerName)) {
-				// TODO? add methods for creating an account
-				return;
-			}
-			economyMethod.getAccount(playerName).subtract(amt);
 		}
 	}
 
@@ -276,139 +223,46 @@ public class BSEcon implements Listener {
 	}
 
 	public static boolean credit(Player player, double amount) {
-		if (amount <= 0) {
-			return amount == 0 || debit(player, -amount);
-		}
-		if (BSEcon.active()) {
-			try {
-				if (bankTransaction(player.getName(), amount)) {
-					return true;
-				}
-			} catch (Exception ex) {
-				BetterShopLogger.Severe("Failed to credit player", ex, false);
-				return true;
-			}
-			BetterShopLogger.Severe("Failed to credit player", false);
-			// something seems to be wrong with iConomy: reload it
-//			BetterShopLogger.Log(Level.SEVERE, "Failed to credit player: attempting iConomy reload", false);
-//			if (reloadIConomy(player.getServer())) {
-//				try {
-//					if (bankTransaction(player.getName(), amount)) {
-//						return true;
-//					}
-//				} catch (Exception ex) {
-//				}
-//			}
-//			BetterShopLogger.Log(Level.SEVERE, "iConomy reload failed to resolve issue.", false);
-		} else {
-			BetterShopLogger.Severe("Failed to credit player: no economy plugin", false);
-			return false;
-		}
-		return true;
+		return execTransaction(player,amount);
 	}
 
 	public static boolean debit(Player player, double amount) {
-		if (amount <= 0) {
-			return amount == 0 || credit(player, -amount);
-		} else if (getBalance(player) < amount) {
-			return false;
-		}
-		if (BSEcon.active()) {
-			try {
-				if (bankTransaction(player.getName(), -amount)) {
-					return true;
-				}
-			} catch (Exception ex) {
-				BetterShopLogger.Severe("Failed to debit player", ex, false);
-				return true;
-			}
-			BetterShopLogger.Severe("Failed to debit player", false);
-
-			// something seems to be wrong with iConomy: reload it
-//			BetterShopLogger.Log(Level.SEVERE, "Failed to debit player: attempting iConomy reload", false);
-//			if (reloadIConomy(player.getServer())) {
-//				try {
-//					if (bankTransaction(player.getName(), -amount)) {
-//						return true;
-//					}
-//				} catch (Exception ex) {
-//				}
-//			}
-//			BetterShopLogger.Log(Level.SEVERE, "iConomy reload failed to resolve issue.", false);
-		} else {
-			BetterShopLogger.Severe("Failed to debit player: no economy plugin", false);
-			return false;
-		}
-		return true;
+		return execTransaction(player,-amount);
 	}
 
-	private static boolean bankTransaction(String player, double amount) {
-		// don't allow account to go negative
-		double preAmt = BSEcon.getBalance(player);
-		if (amount > 0 || preAmt >= -amount) {
-			BSEcon.addMoney(player, amount);
-			if (BetterShop.config.econ == EconMethod.AUTO
-					&& BetterShop.getSettings().BOSBank != null
-					&& !BetterShop.getSettings().BOSBank.trim().isEmpty()
-					&& hasBank(BetterShop.getSettings().BOSBank)) {
-				if (economyMethod != null) {
-					BSEcon.addMoney(BetterShop.getSettings().BOSBank, -amount);
-				} else if (econ != null) {
-					if (amount < 0) {
-						econ.bankWithdraw(BetterShop.getSettings().BOSBank, -amount);
-					} else {
-						econ.bankDeposit(BetterShop.getSettings().BOSBank, -amount);
-					}
-				}
-			}
-			return BSEcon.getBalance(player) != preAmt;
+	private static boolean execTransaction(Player player, double amount) {
+		if (econ == null) return false;
+		if ((BetterShop.config.econ == EconMethod.AUTO
+				&& BetterShop.getSettings().BOSBank != null
+				&& !BetterShop.getSettings().BOSBank.trim().isEmpty()
+				&& hasBank(BetterShop.getSettings().BOSBank))) {
+			return bankTransaction(amount);
 		}
-		return false;
+		if (amount < 0) {
+			if (econ.has(player.getName(), amount)) return econ.withdrawPlayer(player.getName(), -amount).transactionSuccess();
+			return false;
+		}
+		return econ.depositPlayer(player.getName(), amount).transactionSuccess();
+	}
+
+	private static boolean bankTransaction(double amount) {
+		if (amount < 0) {
+			if (econ.bankHas(BetterShop.getSettings().BOSBank,amount).transactionSuccess()) {
+				return econ.bankWithdraw(BetterShop.getSettings().BOSBank, -amount).transactionSuccess();
+			}
+			return false;
+		}
+		return econ.bankDeposit(BetterShop.getSettings().BOSBank, amount).transactionSuccess();
 	}
 
 	public static String format(double amt) {
-		try {
-			if (econ != null) {
-				return econ.format(amt);
-			} else if (economyMethod != null) {
-				return economyMethod.format(amt);
-			}
-			return String.format("%.2f", amt) + " "
-					+ (amt > 1 || amt < 1 ? BetterShop.getSettings().pluralCurrency
-					: BetterShop.getSettings().defaultCurrency);
-		} catch (Exception ex) {
-			BetterShopLogger.Warning("Error Formatting Currency", ex, false);
-		}
-		return String.format("%.2f", amt);
+		return econ.format(amt);
 	}
 
 	public static boolean hasBank(String bank) {
-//		return economyMethod != null 
-//				? economyMethod.hasBanks() && economyMethod.hasBank(bank)
-//				: econ != null ? econ.hasBankSupport() && econ.getBanks().contains(bank) : false;
-
-		if (economyMethod != null) {
-			return economyMethod.hasBanks() && economyMethod.hasBank(bank);
-		} else if (econ != null && econ.hasBankSupport()) {
+		if (econ != null && econ.hasBankSupport()) {
 			return econ.bankBalance(bank).transactionSuccess();
 		}
 		return false;
 	}
-//
-//	static boolean reloadIConomy(Server serv) {
-//		try {
-//			PluginManager m = serv.getPluginManager();
-//			Plugin icon = m.getPlugin("iConomy");
-//			if (icon != null) {
-//				m.disablePlugin(icon);
-//				m.enablePlugin(icon);
-//
-//				return true;
-//			}
-//		} catch (Exception ex) {
-//			BetterShopLogger.Log(Level.SEVERE, "Error reloading iConomy", ex);
-//		}
-//		return false;
-//	}
-} // end class BSEcon
-
+}

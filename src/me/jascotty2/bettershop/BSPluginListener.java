@@ -29,8 +29,6 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.jascotty2.minecraftim.MinecraftIM;
-import com.nijikokun.bukkit.Permissions.Permissions;
-import me.taylorkelly.help.Help;
 import net.milkbowl.vault.Vault;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.event.EventHandler;
@@ -49,10 +47,9 @@ class BSPluginListener implements Listener {
 		shop = plugin;
 		PluginManager pm = plugin.getServer().getPluginManager();
 		checkVaultPermissions(pm.getPlugin("Vault"));
-		checkPermissions(pm.getPlugin("Permissions"));
 		checkMIM(pm.getPlugin("MinecraftIM"));
 		checkSpout(pm.getPlugin("Spout"));
-		checkHelp(pm.getPlugin("Help"));
+		//checkHelp(pm.getPlugin("Help"));
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -60,15 +57,13 @@ class BSPluginListener implements Listener {
 		if (event.getPlugin().isEnabled()) { // double-checking if enabled
 			String pName = event.getPlugin().getDescription().getName();
 			if (pName.equals("Help")) {
-				checkHelp(event.getPlugin());
+				//checkHelp(event.getPlugin());
 			} else if (pName.equals("MinecraftIM")) {
 				checkMIM(event.getPlugin());
-			} else if (pName.equals("Permissions")) {
-				checkPermissions(event.getPlugin());
 			} else if (pName.equals("Spout")) {
 				checkSpout(event.getPlugin());
 			} else {
-				BetterShop.economy.onPluginEnable(event);
+				//BetterShop.economy.onPluginEnable(event);
 			}
 		}
 	}
@@ -80,12 +75,12 @@ class BSPluginListener implements Listener {
 		}
 	}
 
-	public final void checkHelp(Plugin p) {
+	/*public final void checkHelp(Plugin p) {
 		if (!HelpCommands.helpPluginEnabled && p instanceof Help) {
 			HelpCommands.registerHelp(p);
 			BetterShopLogger.Info("'Help' support enabled.");
 		}
-	}
+	}*/
 
 	public final void checkVaultPermissions(Plugin p) {
 		if (BSPermissions.vaultPerms == null && p instanceof Vault) {
@@ -99,14 +94,6 @@ class BSPluginListener implements Listener {
 		}
 	}
 
-	public final void checkPermissions(Plugin p) {
-		if (BSPermissions.vaultPerms == null && 
-				BSPermissions.permissionsPlugin == null && p instanceof Permissions) {
-			BSPermissions.permissionsPlugin = (Permissions) p;
-			BetterShopLogger.Log("Attached to Permissions.");
-		}
-	}
-	
 	public final void checkSpout(Plugin p) {
 		if (BetterShop.keyListener == null && p instanceof Spout) {
 
@@ -143,18 +130,13 @@ class BSPluginListener implements Listener {
 				BetterShopLogger.Info("MinecraftIM link disabled");
 			} else if (pName.equals("Help")) {
 				HelpCommands.helpPluginEnabled = false;
-			} else if (pName.equals("Permissions")) {
-				if (event.getPlugin() instanceof Permissions) {
-					BSPermissions.permissionsPlugin = (Permissions) event.getPlugin();
-					BetterShopLogger.Log("Permissions disabled.");
-				}
 			} else if (pName.equals("Spout")) {
 				BetterShop.keyListener = null;
 				BetterShop.buttonListener = null;
 				BetterShop.chestShop.registerSpout(false);
 				BetterShopLogger.Log("Spout disabled.");
 			} else {
-				BetterShop.economy.onPluginDisable(event);
+				//BetterShop.economy.onPluginDisable(event);
 			}
 		}
 	}

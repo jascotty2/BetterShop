@@ -28,7 +28,6 @@ import me.jascotty2.bettershop.spout.SpoutPopupListener;
 import me.jascotty2.bettershop.utils.BetterShopErrorTracker;
 import me.jascotty2.bettershop.utils.BetterShopLogger;
 import me.jascotty2.bettershop.commands.BSCommandManager;
-import me.jascotty2.bettershop.commands.HelpCommands;
 import me.jascotty2.bettershop.regionshops.RegionShopManager;
 import me.jascotty2.bettershop.signshop.BSSignShop;
 import me.jascotty2.bettershop.chestshop.BSChestShop;
@@ -55,7 +54,6 @@ import me.jascotty2.lib.bukkit.commands.CommandPermissionsException;
 import me.jascotty2.lib.bukkit.commands.CommandUsageException;
 import me.jascotty2.lib.bukkit.commands.MissingNestedCommandException;
 import me.jascotty2.lib.bukkit.commands.WrappedCommandException;
-import me.jascotty2.lib.util.ArrayManip;
 import me.jascotty2.lib.util.Str;
 
 /**

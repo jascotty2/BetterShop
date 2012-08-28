@@ -709,7 +709,7 @@ public class BSConfig {
 	}
 
 	public void setCurrency() {
-		try {
+		//try {
 //            if (BetterShop.iConomy != null) {
 //                String t = BetterShop.iConomy.format(1.);
 //                defaultCurrency = t.substring(t.indexOf(" ") + 1);
@@ -732,7 +732,7 @@ public class BSConfig {
 //                    pluralCurrency = config.getString("currency-name-plural", pluralCurrency);
 //                }
 //            }
-			String eco = BSEcon.economyMethod.getName();
+/*			String eco = BSEcon.economyMethod.getName();
 
 
 			if (eco.equalsIgnoreCase("iConomy")
@@ -760,7 +760,10 @@ public class BSConfig {
 			BetterShopLogger.Log(Level.SEVERE, "Error Extracting Currency Name", e, false);
 
 
-		}
+		}*/
+			defaultCurrency = BSEcon.econ.currencyNameSingular();
+			pluralCurrency = BSEcon.econ.currencyNamePlural();
+		
 	}
 
 	public boolean useMySQL() {
