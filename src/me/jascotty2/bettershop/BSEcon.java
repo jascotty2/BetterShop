@@ -227,7 +227,7 @@ public class BSEcon implements Listener {
 	}
 
 	public static boolean debit(Player player, double amount) {
-		return execTransaction(player,amount);
+		return execTransaction(player,-amount);
 	}
 
 	private static boolean execTransaction(Player player, double amount) {
@@ -252,21 +252,11 @@ public class BSEcon implements Listener {
 			}
 			return false;
 		}
-		return econ.bankDeposit(BetterShop.getSettings().BOSBank, -amount).transactionSuccess();
+		return econ.bankDeposit(BetterShop.getSettings().BOSBank, amount).transactionSuccess();
 	}
 
 	public static String format(double amt) {
-		try {
-			if (econ != null) {
-				return econ.format(amt);
-			}
-			return String.format("%.2f", amt) + " "
-					+ (amt > 1 || amt < 1 ? BetterShop.getSettings().pluralCurrency
-					: BetterShop.getSettings().defaultCurrency);
-		} catch (Exception ex) {
-			BetterShopLogger.Warning("Error Formatting Currency", ex, false);
-		}
-		return String.format("%.2f", amt);
+		return econ.format(amt);
 	}
 
 	public static boolean hasBank(String bank) {
