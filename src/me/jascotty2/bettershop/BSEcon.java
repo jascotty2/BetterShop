@@ -223,69 +223,36 @@ public class BSEcon implements Listener {
 	}
 
 	public static boolean credit(Player player, double amount) {
-		if (amount <= 0) {
-			return amount == 0 || debit(player, -amount);
-		}
-		if (BSEcon.active()) {
-			try {
-				if (bankTransaction(player.getName(), amount)) {
-					return true;
-				}
-			} catch (Exception ex) {
-				BetterShopLogger.Severe("Failed to credit player", ex, false);
-				return true;
-			}
-			BetterShopLogger.Severe("Failed to credit player", false);
-		} else {
-			BetterShopLogger.Severe("Failed to credit player: no economy plugin", false);
-			return false;
-		}
-		return true;
+		return execTransaction(player,amount);
 	}
 
 	public static boolean debit(Player player, double amount) {
-		if (amount <= 0) {
-			return amount == 0 || credit(player, -amount);
-		} else if (getBalance(player) < amount) {
-			return false;
-		}
-		if (BSEcon.active()) {
-			try {
-				if (bankTransaction(player.getName(), -amount)) {
-					return true;
-				}
-			} catch (Exception ex) {
-				BetterShopLogger.Severe("Failed to debit player", ex, false);
-				return true;
-			}
-			BetterShopLogger.Severe("Failed to debit player", false);
-		} else {
-			BetterShopLogger.Severe("Failed to debit player: no economy plugin", false);
-			return false;
-		}
-		return true;
+		return execTransaction(player,amount);
 	}
 
-	private static boolean bankTransaction(String player, double amount) {
-		// don't allow account to go negative
-		double preAmt = BSEcon.getBalance(player);
-		if (amount > 0 || preAmt >= -amount) {
-			BSEcon.addMoney(player, amount);
-			if (BetterShop.config.econ == EconMethod.AUTO
-					&& BetterShop.getSettings().BOSBank != null
-					&& !BetterShop.getSettings().BOSBank.trim().isEmpty()
-					&& hasBank(BetterShop.getSettings().BOSBank)) {
-				if (econ != null) {
-					if (amount < 0) {
-						econ.bankWithdraw(BetterShop.getSettings().BOSBank, -amount);
-					} else {
-						econ.bankDeposit(BetterShop.getSettings().BOSBank, -amount);
-					}
-				}
-			}
-			return BSEcon.getBalance(player) != preAmt;
+	private static boolean execTransaction(Player player, double amount) {
+		if (econ == null) return false;
+		if ((BetterShop.config.econ == EconMethod.AUTO
+				&& BetterShop.getSettings().BOSBank != null
+				&& !BetterShop.getSettings().BOSBank.trim().isEmpty()
+				&& hasBank(BetterShop.getSettings().BOSBank))) {
+			return bankTransaction(amount);
 		}
-		return false;
+		if (amount < 0) {
+			if (econ.has(player.getName(), amount)) return econ.withdrawPlayer(player.getName(), -amount).transactionSuccess();
+			return false;
+		}
+		return econ.depositPlayer(player.getName(), amount).transactionSuccess();
+	}
+
+	private static boolean bankTransaction(double amount) {
+		if (amount < 0) {
+			if (econ.bankHas(BetterShop.getSettings().BOSBank,amount).transactionSuccess()) {
+				return econ.bankWithdraw(BetterShop.getSettings().BOSBank, -amount).transactionSuccess();
+			}
+			return false;
+		}
+		return econ.bankDeposit(BetterShop.getSettings().BOSBank, -amount).transactionSuccess();
 	}
 
 	public static String format(double amt) {
