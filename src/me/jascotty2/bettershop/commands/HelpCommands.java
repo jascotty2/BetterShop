@@ -18,15 +18,12 @@
 
 package me.jascotty2.bettershop.commands;
 
-import me.jascotty2.bettershop.BSConfig;
 import me.jascotty2.bettershop.BSutils;
-import me.jascotty2.bettershop.BetterShop;
 import me.jascotty2.bettershop.enums.BetterShopPermission;
 import me.jascotty2.bettershop.utils.BSPermissions;
 import me.jascotty2.lib.bukkit.commands.Command;
 import me.jascotty2.lib.util.Str;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
 /**
  * @author jacob

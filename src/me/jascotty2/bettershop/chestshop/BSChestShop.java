@@ -514,6 +514,7 @@ public class BSChestShop implements Listener {
 			player = p;
 		}
 
+		@SuppressWarnings("deprecation")
 		public void run() {
 			playerUpdate.remove(player);
 			player.updateInventory();
